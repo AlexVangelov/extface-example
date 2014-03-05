@@ -1,0 +1,75 @@
+<div class="page-header nav">
+  <%= link_to edit_shop_path(@shop), class: 'btn btn-default navbar-btn pull-right', data: { toggle: :modal, target: '#shop' } do %>
+    Edit
+  <% end %>
+  <%= blank_modal :shop %>
+  <h3 class='navbar-text'>
+    Shop
+    &raquo;
+    <%= @shop.name %>
+  </h3>
+</div>
+<br />
+<% if @shop.extface_devices.empty? || @shop.extface_device.nil? || @shop.extface_device.driver.nil? %>
+  <div class='alert alert-warning'>
+    You have to configure an <%= link_to 'external interface', shop_extface_path(@shop) %>, and <%= link_to 'assign it', edit_shop_path(@shop), data: { toggle: :modal, target: '#shop' }%> to the Shop.
+  </div>
+<% end %>
+<dl class="dl-horizontal">
+  <dt>Extface Device:</dt>
+  <dd><%= @shop.extface_device ? @shop.extface_device.name : 'Not configured' %></dd>
+  <dt>Driver:</dt>
+  <dd><%= @shop.extface_device.try(:driver) ? @shop.extface_device.try(:driver_name) : 'Not set' %></dd>
+</dl>
+<% if @shop.extface_devices.present? && @shop.extface_device.present? && @shop.extface_device.driver.present? %>
+  <div class='panel panel-warning'>
+    <div class='panel-heading'>Before testing &raquo; Run extface client</div>
+    <div class='panel-body'>
+       To simulate extface client behavior, you can use cURL client with bash script:
+      <pre>
+        while true; do RESULT=$(curl -u extface:extface -c extface -b extface -s <%= shop_extface_device_pull_url @shop, @shop.extface_device.uuid %>); if [ -z "$RESULT" ]; then sleep 5; else echo -e "$RESULT"; sleep 1; fi done
+      </pre>
+      <small class='text-warning'> As this is a public demo, someone else may have run client for this device. You can <%= link_to 'Sign out', destroy_shop_session_path, method: :delete %> and create another Shop instance for testing.</small>
+    </div>
+  </div>
+<% end %>
+<div class='row'>
+  <div class='col-sm-6'>
+    <%= form_for @shop, url: shop_print_test_path(@shop), remote: true, html: { class: 'form-inline' } do |f|%>
+      <%= f.button 'Print Test Page', type: :submit, class: 'btn btn-primary btn-lg btn-block' %>
+    <% end %>
+    <br />
+    <%= form_for @shop, url: shop_print_test_path(@shop), remote: true,  html: { class: 'form-inline' } do |f|%>
+      <div class="input-group input-group-lg">
+        <%= number_field_tag :count, nil, class: 'form-control', placeholder: 'Number of pages' %>
+        <span class="input-group-btn">
+          <%= f.button 'Print Multiple Test Pages', type: :submit, class: 'btn btn-primary' %>
+        </span>
+      </div>
+    <% end %>
+    <br />
+    <%= form_for @shop, url: shop_print_file_path(@shop), remote: true, html: { multipart: true, class: 'form-inline' } do |f|%>
+      <div class="input-group input-group-lg">
+        <%= file_field_tag :file, class: 'form-control' %>
+        <%= token_tag %>
+        <span class="input-group-btn">
+          <%= f.button 'Print Uploaded File', type: :submit, class: 'btn btn-primary' %>
+        </span>
+      </div>
+    <% end %>
+    <br />
+  </div>
+  <div class='col-sm-6'>
+    <%= form_for @shop, url: shop_print_text_path(@shop), remote: true,  html: { class: 'form' } do |f|%>
+      <%= f.button 'Print Random Text', type: :submit, class: 'btn btn-primary btn-lg btn-block' %>
+      <%= text_area_tag :text, nil, rows: 6, class: 'form-control', placeholder: 'Enter random text' %>
+    <% end %>
+  </div>
+</div>
+<% if @job %>
+  <script>
+    $(function() {
+      document.extface_monitor("<%= shop_extface_job_path(@shop, @job) %>");
+    });
+  </script>
+<% end %>

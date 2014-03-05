@@ -1,0 +1,29 @@
+<div class="modal-header">
+  <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+  <h4 class="modal-title">
+    Shop &raquo; Edit
+  </h4>
+</div>
+<%= form_for @shop, remote: true, html: { id: :shop_form, class: 'form-horizontal' } do |f| %>
+  <div class="modal-body">
+    <%= render 'object_errors', object: f.object %>
+    <%= modal_form_group f, :name, :text_field %>
+    <div class='form-group'>
+      <%= f.label :extface_device_id, class: 'col-sm-4 control-label'%>
+      <div class='col-md-8'>
+        <%= f.select :extface_device_id, @shop.extface_devices.select{ |d| d.print? }.collect{ |x| ["#{x.name} / #{x.driver_name}", x.id] }, { include_blank: true}, class: 'form-control' %>
+      </div>
+    </div>
+  <div>
+  <div class='modal-footer'>
+    <% unless @shop.extface_devices.select{ |d| d.print? }.any? %>
+    <div class='pull-left text-left'>
+      No print devices configured! <br />Go to
+      <%= link_to 'External Interfaces', shop_extface_path(@shop) %>
+      to setup one.
+    </div>
+    <% end %>
+    <%= f.button 'Cancel', type: :button, class: 'btn btn-default', data: { dismiss: :modal } %>
+    <%= f.button 'Update', type: :submit, class: 'btn btn-primary' %>
+  </div>
+<% end %>
